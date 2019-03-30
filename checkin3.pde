@@ -11,6 +11,7 @@ int count;
 int moverPos;
 float moverPerc;
 Obstacle obstacle;
+Obstacle o2;
 boolean done;
 int size = 1;
 void setup(){
@@ -22,10 +23,11 @@ void setup(){
   exploredSet = new ArrayList<Position>();
   solution = new ArrayList<Position>();
   edges = new ArrayList<Edge>();
-  obstacle = new Obstacle(width/2,height/2,400);
+  obstacle = new Obstacle(width/2,height/2,600);
+  o2 = new Obstacle(mouseX,mouseY,500);
   m = new Mover();
   int total = 0;
-  while(total <= 20){
+  while(total <= 30){
     Position p = new Position(random(size,width-size),random(size,height-size));
     if(!p.inObstacle()){
       world.add(p);
@@ -50,13 +52,15 @@ void setup(){
   moverPerc = 0;
   done = false;
   openSet.add(start);
-
+  o2.loc.x = mouseX;
+  o2.loc.y = mouseY;
 }
 
 void draw(){
   background(255);
 
-
+  o2.loc.x = mouseX;
+  o2.loc.y = mouseY;
   Position currentPos = start;
 
   if(!done){
@@ -109,6 +113,7 @@ void draw(){
   fill(0,255,0);
   ellipse(end.loc.x,end.loc.y,20,20);
   obstacle.display();
+  o2.display();
   if(!done){
     for(Position p : world){
       p.display(color(255,255,255),1);
@@ -147,7 +152,7 @@ void draw(){
     moverPerc+=0.009;
     
     for(Edge edg : edges){
-      edg.display(20);
+      edg.display(10);
     }
     if(count > 1){
       setup();
@@ -241,7 +246,11 @@ class Position{
     float v2 = (loc.y - obstacle.loc.y) * (loc.y - obstacle.loc.y);
     float d = sqrt(v1 + v2);
     
-    if((d - moverSize) <= (obstacle.r/2)){
+    float v1_2 = (loc.x - o2.loc.x) * (loc.x - o2.loc.x);
+    float v2_2 = (loc.y - o2.loc.y) * (loc.y - o2.loc.y);
+    float d_2 = sqrt(v1_2 + v2_2);
+    
+    if(((d - moverSize) <= (obstacle.r/2)) || ((d_2 - moverSize) <= (o2.r/2))) {
       return true;
     }
     else{
@@ -255,8 +264,18 @@ class Position{
     float b = loc.y - p.loc.y;
     float x = sqrt(a*a + b*b);
     
-    return((abs((width/2 - loc.x) * (p.loc.y - loc.y) - 
-    (height/2 - loc.y) * (p.loc.x - loc.x)) / x - moverSize)>= obstacle.r/2);
+    
+    float n_1 = (abs((width/2 - loc.x) * (p.loc.y - loc.y) - 
+    (height/2 - loc.y) * (p.loc.x - loc.x)) / x - moverSize);
+    float n_2 = (abs((o2.loc.x - loc.x) * (p.loc.y - loc.y) - 
+    (o2.loc.y - loc.y) * (p.loc.x - loc.x)) / x - moverSize);
+    
+    if(n_1 >= obstacle.r/2 && n_2 >= o2.r/2){
+      return true;
+    }else{
+      return false;
+    }
+
      
   }
 
